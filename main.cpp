@@ -84,6 +84,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	void DrawSphere(const Sphere & sphere, const Matrix4x4 & viewProjectionMatrix4x4, const Matrix4x4 & viewportMatrix, uint32_t color);
 	void DrawGrid(const Matrix4x4 & viewProjectionMatrix, const Matrix4x4 & viewportMatrix);
 	void DrawPlane(const Plane & plane, const Matrix4x4 & viewProjectionMatrix, const Matrix4x4 & viewportMatrix, uint32_t color);
+	void DrawSegment(const Segment & segment, const Matrix4x4 & viewProjectionMatrix, const Matrix4x4 & viewportMatrix, uint32_t color);
 	void DrawRay(const Line & ray, float length, const Matrix4x4 & viewProjectionMatrix, const Matrix4x4 & viewportMatrix, uint32_t color);
 	void DrawTriangle(const Triangle & triangle, const Matrix4x4 & viewProjectionMatrix, const Matrix4x4 & viewportMatrix, uint32_t color);
 
@@ -121,7 +122,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat3("SphereCenter", &pointSphere.center.x, 0.01f);
 		ImGui::DragFloat("SphereRadius", &pointSphere.radius, 0.01f);
 		ImGui::DragFloat3("planeNormal", &plane.normal.x, 0.01f);
-		ImGui::DragFloat3("Segment", &line.origin.x, 0.01f);
+		ImGui::DragFloat3("Segment", &segment.origin.x, 0.01f);
 		ImGui::DragFloat("planeDistance", &plane.distance, 0.01f);
 		ImGui::End();
 
@@ -145,14 +146,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (IsCollision(triangle, segment)) {
 			//DrawSphere(pointSphere, viewProjectionMatrix, viewportMatrix, RED);
 			//DrawPlane(plane, viewProjectionMatrix, viewportMatrix, RED);
-			DrawRay(line, 2.0f, viewProjectionMatrix, viewportMatrix, RED);
+			DrawSegment(segment, viewProjectionMatrix, viewportMatrix, RED);
+			//DrawRay(line, 2.0f, viewProjectionMatrix, viewportMatrix, RED);
 			DrawTriangle(triangle, viewProjectionMatrix, viewportMatrix, RED);
 			//DrawSphere(closestPointSphere, viewProjectionMatrix, viewportMatrix, RED);
 
 		} else {
 			//DrawSphere(pointSphere, viewProjectionMatrix, viewportMatrix, WHITE);
 			//DrawPlane(plane, viewProjectionMatrix, viewportMatrix, WHITE);
-			DrawRay(line, 2.0f, viewProjectionMatrix, viewportMatrix, WHITE);
+			DrawSegment(segment, viewProjectionMatrix, viewportMatrix, WHITE);
+			//DrawRay(line, 2.0f, viewProjectionMatrix, viewportMatrix, WHITE);
 			DrawTriangle(triangle, viewProjectionMatrix, viewportMatrix, WHITE);
 			//DrawSphere(closestPointSphere, viewProjectionMatrix, viewportMatrix, WHITE);
 		}
@@ -698,6 +701,20 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 			static_cast<int>(screenEnd.x), static_cast<int>(screenEnd.y),
 			BLACK);
 	}
+}
+
+void DrawSegment(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+	// 始点
+	Vector3 start = Transform(Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
+	// 終点（始点 + diff）
+	Vector3 endPoint3D = Add(segment.origin, segment.diff);
+	Vector3 end = Transform(Transform(endPoint3D, viewProjectionMatrix), viewportMatrix);
+
+	Novice::DrawLine(
+		static_cast<int>(start.x), static_cast<int>(start.y),
+		static_cast<int>(end.x), static_cast<int>(end.y),
+		color
+	);
 }
 
 void DrawRay(const Line& ray, float length, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
